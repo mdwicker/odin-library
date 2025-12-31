@@ -1,4 +1,23 @@
-const myLibrary = [];
+const myLibrary = [
+    {
+        title: "The Hobbit",
+        author: "J.R.R. Tolkien",
+        pages: 295,
+        read: true
+    },
+    {
+        title: "The Discarded Image",
+        author: "C.S. Lewis",
+        pages: 300,
+        read: true
+    },
+    {
+        title: "All Hallows' Eve",
+        author: "Charles Williams",
+        pages: 200,
+        read: false
+    }
+];
 
 
 function Book(title, author, pages, read) {

@@ -1,0 +1,34 @@
+h1 {
+    font-size: 2.5rem;
+}
+
+
+/* Containers */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 5px solid black;
+}
+
+main {
+    padding: 30px;
+}
+
+.book-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    justify-content: center;
+}
+
+
+/* Components */
+
+.book {
+    width: 200px;
+    height: 275px;
+    background-color: brown;
+    border: 3px solid black;
+}
