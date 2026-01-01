@@ -10,9 +10,9 @@
 </head>
 <body>
     <header>
-        <h1 class="page-title">Bookshelf</h1>
+        <p class="page-title">Bookshelf</p>
         <div class="bookshelf-actions">
-            <button>New Book</button>
+            <button id="add-book-btn">Add Book</button>
         </div>
     </header>
 
@@ -20,5 +20,33 @@
         <div class="book-cards">
         </div>
     </main>
+
+    <dialog id="add-book-dialog">
+        <form>
+            <h1 class="form-title">Add Book</h1>
+            <div class="form-controls">
+                <div class="form-control form-control-vertical">
+                    <label for="new-book-title">Title: </label>
+                    <input type="text" id="new-book-title">
+                </div>
+                <div class="form-control form-control-vertical">
+                    <label for="new-book-author">Author: </label>
+                    <input type="text" id="new-book-author">
+                </div>
+                <div class="form-control form-control-vertical">
+                    <label for="new-book-pages">No. of Pages: </label>
+                    <input type="number" min=1 max=99999 id="new-book-pages">
+                </div>
+                <div class="form-control">
+                    <input type="checkbox" id="new-book-read" value="true">
+                    <label for="new-book-read">Read</label>
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button formmethod="dialog">Cancel</button>
+                <button id="add-book-save-btn">Save</button>
+            </div>
+        </form>
+    </dialog>
 </body>
 </html>

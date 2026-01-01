@@ -87,3 +87,24 @@ for (const book of booksToAdd) {
 for (const book of myLibrary) {
     bookCards.append(createBookDomElement(book));
 }
+
+
+
+// Event Listeners
+const addBookDialog = document.getElementById("add-book-dialog");
+
+document.getElementById("add-book-btn").addEventListener("click", () => {
+    addBookDialog.showModal();
+});
+
+document.getElementById("add-book-save-btn")
+    .addEventListener("click", (e) => {
+        // Avoid submitting form
+        e.preventDefault();
+        addBookDialog.close();
+
+        // get data from form
+        // make new book
+        // add to dom
+        // reset form
+    });
