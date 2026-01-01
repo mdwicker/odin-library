@@ -42,6 +42,7 @@ function addBookToLibrary(title, author, pages, read) {
     const newBook = new Book(title, author, pages, read);
 
     myLibrary.push(newBook);
+    return newBook;
 }
 
 function createBookDomElement(book) {
@@ -91,20 +92,30 @@ for (const book of myLibrary) {
 
 
 // Event Listeners
-const addBookDialog = document.getElementById("add-book-dialog");
+
+const addBookDialog = document.querySelector(".add-book-dialog");
+const addBookForm = document.querySelector('.add-book-dialog form');
+console.log(addBookForm);
 
 document.getElementById("add-book-btn").addEventListener("click", () => {
     addBookDialog.showModal();
 });
 
-document.getElementById("add-book-save-btn")
-    .addEventListener("click", (e) => {
-        // Avoid submitting form
-        e.preventDefault();
-        addBookDialog.close();
+addBookDialog.addEventListener("close", (e) => {
+    addBookForm.reset();
+});
 
-        // get data from form
-        // make new book
-        // add to dom
-        // reset form
-    });
+addBookForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const bookData = new FormData(addBookForm);
+
+    const book = addBookToLibrary(
+        bookData.get("title"),
+        bookData.get("author"),
+        bookData.get("pages"),
+        bookData.get("read"));
+    bookCards.append(createBookDomElement(book));
+
+    addBookDialog.close();
+});
