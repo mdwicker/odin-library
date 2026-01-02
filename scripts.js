@@ -68,9 +68,24 @@ function createBookDomElement(book) {
     }
     bookNode.append(bookRead);
 
+    const bookDeleteBtn = document.createElement("button");
+    bookDeleteBtn.classList.add("book-delete-btn");
+    bookDeleteBtn.classList.add("book-hidden-btn");
+    bookDeleteBtn.textContent = 'Delete';
+    bookNode.append(bookDeleteBtn);
+
+    const bookReadToggle = document.createElement("button");
+    bookReadToggle.classList.add("book-read-toggle");
+    bookReadToggle.classList.add("book-hidden-btn");
+    bookReadToggle.textContent = book.read ? 'Mark Not Read' : 'Mark Read';
+    bookReadToggle.addEventListener("click", (e) => {
+
+    })
+    bookNode.append(bookReadToggle);
+
     const bookPages = document.createElement("div");
     bookPages.classList.add("book-pages");
-    bookPages.textContent = book.pages;
+    bookPages.textContent = `${book.pages}p`;
     bookNode.append(bookPages);
 
     return bookNode;
@@ -101,12 +116,12 @@ document.getElementById("add-book-btn").addEventListener("click", () => {
     addBookDialog.showModal();
 });
 
-addBookDialog.addEventListener("close", (e) => {
+addBookDialog.addEventListener("close", () => {
     addBookForm.reset();
 });
 
-addBookForm.addEventListener('submit', (event) => {
-    event.preventDefault();
+document.getElementById("add-book-save-btn").addEventListener('click', (e) => {
+    e.preventDefault();
 
     const bookData = new FormData(addBookForm);
 
