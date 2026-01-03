@@ -24,7 +24,7 @@ const booksToAdd = [
 
 function Book(title, author, pages, read) {
     if (!new.target) {
-        throw Error("You must use the 'new' operator to call the constructur");
+        throw Error("You must use the 'new' operator to call the constructor");
     }
 
     this.title = title;
@@ -32,10 +32,14 @@ function Book(title, author, pages, read) {
     this.pages = pages;
     this.read = read;
     this.id = self.crypto.randomUUID();
+}
 
-    this.info = function () {
-        return `${title} by ${author}, ${pages} pages, ${read ? 'read' : 'not read yet'}`;
-    }
+Book.prototype.info = function () {
+    return `${this.title} by ${this.author}, ${this.pages} pages, ${this.read ? 'read' : 'unread'}`;
+}
+
+Book.prototype.toggleRead = function () {
+    this.read = !this.read;
 }
 
 function addBookToLibrary(title, author, pages, read) {
@@ -48,47 +52,95 @@ function addBookToLibrary(title, author, pages, read) {
 function createBookDomElement(book) {
     const bookNode = document.createElement("div");
     bookNode.classList.add("book");
-    bookNode.id = book.id;
+    bookNode.dataset.bookId = book.id;
 
-    const bookTitle = document.createElement("div");
-    bookTitle.classList.add("book-title");
-    bookTitle.textContent = book.title;
-    bookNode.append(bookTitle);
-
-    const bookAuthor = document.createElement("div");
-    bookAuthor.classList.add("book-author");
-    bookAuthor.textContent = book.author;
-    bookNode.append(bookAuthor);
-
-    const bookRead = document.createElement("div");
-    bookRead.classList.add("book-read");
-    bookRead.textContent = '✓';
-    if (!book.read) {
-        bookRead.classList.add("hidden");
-    }
-    bookNode.append(bookRead);
-
-    const bookDeleteBtn = document.createElement("button");
-    bookDeleteBtn.classList.add("book-delete-btn");
-    bookDeleteBtn.classList.add("book-hidden-btn");
-    bookDeleteBtn.textContent = 'Delete';
-    bookNode.append(bookDeleteBtn);
-
-    const bookReadToggle = document.createElement("button");
-    bookReadToggle.classList.add("book-read-toggle");
-    bookReadToggle.classList.add("book-hidden-btn");
-    bookReadToggle.textContent = book.read ? 'Mark Not Read' : 'Mark Read';
-    bookReadToggle.addEventListener("click", (e) => {
-
-    })
-    bookNode.append(bookReadToggle);
-
-    const bookPages = document.createElement("div");
-    bookPages.classList.add("book-pages");
-    bookPages.textContent = `${book.pages}p`;
-    bookNode.append(bookPages);
+    // Add components
+    bookNode.append(
+        createTitleNode(book),
+        createAuthorNode(book),
+        createReadMarkerNode(book),
+        createPageCountNode(book),
+        createDeleteBtn(book),
+        createReadToggleBtn(book),
+    );
 
     return bookNode;
+}
+
+function createTitleNode(book) {
+    const titleNode = document.createElement("div");
+    titleNode.classList.add("book-title");
+    titleNode.textContent = book.title;
+    return titleNode;
+}
+
+function createAuthorNode(book) {
+    const authorNode = document.createElement("div");
+    authorNode.classList.add("book-author");
+    authorNode.textContent = book.author;
+    return authorNode;
+}
+
+function createReadMarkerNode(book) {
+    const readMarkerNode = document.createElement("button");
+    readMarkerNode.classList.add("book-read-marker");
+    readMarkerNode.textContent = '✓';
+    readMarkerNode.dataset.bookId = book.id;
+    if (book.read) {
+        readMarkerNode.classList.add("is-read");
+    } else {
+        readMarkerNode.classList.add("is-unread");
+    }
+    return readMarkerNode;
+}
+
+function createPageCountNode(book) {
+    const pageCountNode = document.createElement("div");
+    pageCountNode.classList.add("book-pages");
+    pageCountNode.textContent = book.pages ? `${book.pages}p` : '';
+    return pageCountNode;
+}
+
+function createDeleteBtn(book) {
+    const deleteBtn = document.createElement("button");
+    deleteBtn.classList.add("book-delete-btn");
+    deleteBtn.classList.add("book-hidden-btn");
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.dataset.bookId = book.id;
+    return deleteBtn;
+}
+
+function createReadToggleBtn(book) {
+    const readToggleBtn = document.createElement("button");
+    readToggleBtn.classList.add("book-read-toggle");
+    readToggleBtn.classList.add("book-hidden-btn");
+    readToggleBtn.textContent = book.read ? 'Mark Unread' : 'Mark Read';
+    readToggleBtn.dataset.bookId = book.id;
+    return readToggleBtn;
+}
+
+function deleteBook(bookId) {
+    const index = myLibrary.findIndex(book => book.id === bookId);
+    if (index > -1) {
+        myLibrary.splice(index, 1);
+        document.querySelector(`.book[data-book-id="${bookId}"]`).remove();
+    }
+}
+
+function toggleReadStatus(bookId) {
+    // Toggle status in library
+    const book = myLibrary.find(book => book.id === bookId);
+    book.toggleRead();
+
+    // Toggle read button
+    const toggleBtn = document.querySelector(`.book-read-toggle[data-book-id="${bookId}"]`);
+    toggleBtn.textContent =
+        book.read ? "Mark Unread" : "Mark Read";
+
+    // Toggle checkmark on card
+    const toggleMarker = document.querySelector(`.book[data-book-id="${bookId}"] .book-read-marker`);
+    toggleMarker.classList.toggle("is-read");
+    toggleMarker.classList.toggle("is-unread");
 }
 
 
@@ -97,30 +149,27 @@ function createBookDomElement(book) {
 const bookCards = document.querySelector(".book-cards");
 
 for (const book of booksToAdd) {
-    addBookToLibrary(book.title, book.author, book.pages, book.read);
-}
-
-for (const book of myLibrary) {
-    bookCards.append(createBookDomElement(book));
+    const newBook = addBookToLibrary(book.title, book.author, book.pages, book.read);
+    bookCards.append(createBookDomElement(newBook))
 }
 
 
-
-// Event Listeners
+// Event Listener Wiring
 
 const addBookDialog = document.querySelector(".add-book-dialog");
 const addBookForm = document.querySelector('.add-book-dialog form');
-console.log(addBookForm);
 
+// Add Book button displays form
 document.getElementById("add-book-btn").addEventListener("click", () => {
     addBookDialog.showModal();
 });
 
+// Reset book form on close
 addBookDialog.addEventListener("close", () => {
     addBookForm.reset();
 });
 
-document.getElementById("add-book-save-btn").addEventListener('click', (e) => {
+addBookForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const bookData = new FormData(addBookForm);
@@ -129,8 +178,22 @@ document.getElementById("add-book-save-btn").addEventListener('click', (e) => {
         bookData.get("title"),
         bookData.get("author"),
         bookData.get("pages"),
-        bookData.get("read"));
+        bookData.get("read") === "true");
     bookCards.append(createBookDomElement(book));
 
     addBookDialog.close();
 });
+
+// Event listeners for delete buttons and reat status toggles
+document.querySelector(".book-cards").addEventListener('click', (e) => {
+    const bookId = e.target.dataset.bookId;
+
+    if (e.target.classList.contains("book-delete-btn")) {
+        deleteBook(bookId);
+    }
+
+    if (e.target.classList.contains("book-read-toggle")
+        || e.target.classList.contains("book-read-marker")) {
+        toggleReadStatus(bookId);
+    }
+})
