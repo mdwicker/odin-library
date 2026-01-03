@@ -30,14 +30,16 @@
                     <input type="text"
                            id="new-book-title"
                            name="title"
-                           maxlength="60">
+                           maxlength="60"
+                           required>
                 </div>
                 <div class="form-control form-control-vertical">
                     <label for="new-book-author">Author: </label>
                     <input type="text"
                            id="new-book-author"
                            name="author"
-                           maxlength="30">
+                           maxlength="30"
+                           required>
                 </div>
                 <div class="form-control form-control-vertical">
                     <label for="new-book-pages">No. of Pages: </label>
@@ -49,7 +51,7 @@
                 </div>
             </div>
             <div class="form-buttons">
-                <button formmethod="dialog">Cancel</button>
+                <button type="button" id="add-book-cancel-btn">Cancel</button>
                 <button id="add-book-save-btn">Save</button>
             </div>
         </form>

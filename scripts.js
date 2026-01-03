@@ -64,6 +64,7 @@ function createBookDomElement(book) {
         createReadToggleBtn(book),
     );
 
+    renderBook(bookNode, book);
     return bookNode;
 }
 
@@ -86,11 +87,6 @@ function createReadMarkerNode(book) {
     readMarkerNode.classList.add("book-read-marker");
     readMarkerNode.textContent = '✓';
     readMarkerNode.dataset.bookId = book.id;
-    if (book.read) {
-        readMarkerNode.classList.add("is-read");
-    } else {
-        readMarkerNode.classList.add("is-unread");
-    }
     return readMarkerNode;
 }
 
@@ -114,7 +110,6 @@ function createReadToggleBtn(book) {
     const readToggleBtn = document.createElement("button");
     readToggleBtn.classList.add("book-read-toggle");
     readToggleBtn.classList.add("book-hidden-btn");
-    readToggleBtn.textContent = book.read ? 'Mark Unread' : 'Mark Read';
     readToggleBtn.dataset.bookId = book.id;
     return readToggleBtn;
 }
@@ -128,19 +123,21 @@ function deleteBook(bookId) {
 }
 
 function toggleReadStatus(bookId) {
-    // Toggle status in library
     const book = myLibrary.find(book => book.id === bookId);
+    const bookNode = document.querySelector(`.book[data-book-id="${bookId}"]`);
+
     book.toggleRead();
+    renderBook(bookNode, book);
+}
 
-    // Toggle read button
-    const toggleBtn = document.querySelector(`.book-read-toggle[data-book-id="${bookId}"]`);
-    toggleBtn.textContent =
-        book.read ? "Mark Unread" : "Mark Read";
+function renderBook(bookNode, book) {
+    const readMarker = bookNode.querySelector(".book-read-marker");
+    const readToggle = bookNode.querySelector(".book-read-toggle");
 
-    // Toggle checkmark on card
-    const toggleMarker = document.querySelector(`.book[data-book-id="${bookId}"] .book-read-marker`);
-    toggleMarker.classList.toggle("is-read");
-    toggleMarker.classList.toggle("is-unread");
+    readMarker.classList.toggle("is-read", book.read);
+    readMarker.classList.toggle("is-unread", !book.read);
+
+    readToggle.textContent = book.read ? "Mark Unread" : "Mark Read";
 }
 
 
@@ -163,6 +160,12 @@ const addBookForm = document.querySelector('.add-book-dialog form');
 document.getElementById("add-book-btn").addEventListener("click", () => {
     addBookDialog.showModal();
 });
+
+// Close book form on cancel
+document.getElementById("add-book-cancel-btn")
+    .addEventListener("click", () => {
+        addBookDialog.close();
+    });
 
 // Reset book form on close
 addBookDialog.addEventListener("close", () => {
@@ -189,7 +192,9 @@ document.querySelector(".book-cards").addEventListener('click', (e) => {
     const bookId = e.target.dataset.bookId;
 
     if (e.target.classList.contains("book-delete-btn")) {
-        deleteBook(bookId);
+        if (window.confirm("Do you really want to delete this book?")) {
+            deleteBook(bookId);
+        }
     }
 
     if (e.target.classList.contains("book-read-toggle")

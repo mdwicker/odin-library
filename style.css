@@ -3,6 +3,10 @@ h1 {
     font-weight: bold;
 }
 
+button {
+    cursor: pointer;
+}
+
 
 /* Containers */
 
@@ -91,8 +95,6 @@ main {
     font-size: 1.5rem;
     background-color: rgb(225, 230, 233);
     border: none;
-
-    cursor: pointer;
 }
 
 .book-read-marker.is-unread {
