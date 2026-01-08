@@ -33,12 +33,14 @@ class Library {
             this.#books.splice(index, 1);
         }
     }
+
+    toggleRead(id) {
+        this.getBook(id).toggleRead();
+    }
 }
 
 
-
 // Book class
-
 class Book {
     constructor(title, author, pages, read) {
         this.title = title;
@@ -64,7 +66,85 @@ const DisplayController = ((library) => {
     const bookNodes = {};
 
     renderShelf();
+    bindBookCardListeners();
+    bindAddBookFormListeners();
 
+
+    function bindBookCardListeners() {
+        container.addEventListener('click', (e) => {
+            const classes = e.target.classList;
+            const id = e.target.closest(".book").dataset.bookId;
+
+            if (classes.contains("book-delete-btn") &&
+                window.confirm("Do you really want to delete this book?")) {
+                library.deleteBook(id);
+            } else if (classes.contains("book-read-toggle") ||
+                classes.contains("book-read-marker")) {
+                library.toggleRead(id);
+            } else {
+                return;
+            }
+
+            renderShelf();
+        })
+    }
+
+    function bindAddBookFormListeners() {
+        const dialog = document.querySelector(".add-book-dialog");
+        const form = document.querySelector('.add-book-dialog form');
+
+        // Open form when "add book" is pressed
+        document.getElementById("add-book-btn")
+            .addEventListener("click", () => {
+                dialog.showModal();
+            });
+
+        // Close book form on cancel
+        document.getElementById("add-book-cancel-btn")
+            .addEventListener("click", () => {
+                dialog.close();
+            });
+
+        // Reset book form on close
+        dialog.addEventListener("close", () => {
+            form.reset();
+        });
+
+        // Add book on form submit
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const bookData = new FormData(form);
+
+            library.addBook(
+                bookData.get("title"),
+                bookData.get("author"),
+                bookData.get("pages"),
+                bookData.get("read") === "true");
+
+            dialog.close();
+
+            renderShelf();
+        });
+    }
+
+    function renderShelf() {
+        const books = library.getAllBooks();
+
+        for (const id in bookNodes) {
+            if (!books.find(book => book.id === id)) {
+                bookNodes[id].remove();
+                delete bookNodes[id];
+            }
+        }
+        for (const book of books) {
+            if (!(book.id in bookNodes)) {
+                bookNodes[book.id] = createBookNode(book);
+                container.append(bookNodes[book.id]);
+            }
+            refreshBook(book.id);
+        }
+    }
 
     function createBookNode(book) {
         const bookNode = document.createElement("div");
@@ -77,8 +157,8 @@ const DisplayController = ((library) => {
             createAuthorNode(book.author),
             createReadMarkerNode(),
             createPageCountNode(book.pages),
-            createDeleteBtn(book),
-            createReadToggleBtn(book),
+            createDeleteBtn(),
+            createReadToggleBtn(),
         );
 
         return bookNode;
@@ -144,93 +224,4 @@ const DisplayController = ((library) => {
         readToggle.textContent = book.read ? "Mark Unread" : "Mark Read";
     }
 
-    function renderShelf() {
-        const books = library.getAllBooks();
-
-        for (const id in bookNodes) {
-            if (!books.find(book => book.id === id)) {
-                bookNodes[id].remove();
-                delete bookNodes[id];
-            }
-        }
-        for (const book of books) {
-            if (!(book.id in bookNodes)) {
-                bookNodes[book.id] = createBookNode(book);
-                container.append(bookNodes[book.id]);
-            } else {
-                refreshBook(book.id);
-            }
-        }
-    }
-
 })(new Library(booksToAdd));
-
-
-
-// Page Initialization 
-
-// const bookCards = document.querySelector(".book-cards");
-// const myLibrary = new Library(booksToAdd);
-
-// for (const book of myLibrary.getAllBooks()) {
-//     bookCards.append(createBookDomElement(book))
-// }
-
-
-// Event Listener Wiring// Wiring
-
-function toggleReadStatus(bookId) {
-    const bookNode = document.querySelector(`.book[data-book-id="${bookId}"]`);
-    renderBook(bookNode, book);
-}
-
-
-const addBookDialog = document.querySelector(".add-book-dialog");
-const addBookForm = document.querySelector('.add-book-dialog form');
-
-// Add Book button displays form
-document.getElementById("add-book-btn").addEventListener("click", () => {
-    addBookDialog.showModal();
-});
-
-// Close book form on cancel
-document.getElementById("add-book-cancel-btn")
-    .addEventListener("click", () => {
-        addBookDialog.close();
-    });
-
-// Reset book form on close
-addBookDialog.addEventListener("close", () => {
-    addBookForm.reset();
-});
-
-addBookForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const bookData = new FormData(addBookForm);
-
-    const book = myLibrary.addBook(
-        bookData.get("title"),
-        bookData.get("author"),
-        bookData.get("pages"),
-        bookData.get("read") === "true");
-    bookCards.append(createBookDomElement(book));
-
-    addBookDialog.close();
-});
-
-// Event listeners for delete buttons and reat status toggles
-document.querySelector(".book-cards").addEventListener('click', (e) => {
-    const bookId = e.target.dataset.bookId;
-
-    if (e.target.classList.contains("book-delete-btn")) {
-        if (window.confirm("Do you really want to delete this book?")) {
-            deleteBook(bookId);
-        }
-    }
-
-    if (e.target.classList.contains("book-read-toggle")
-        || e.target.classList.contains("book-read-marker")) {
-        toggleReadStatus(bookId);
-    }
-})
