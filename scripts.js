@@ -1,54 +1,64 @@
-const myLibrary = [];
-
+// Setup Materials
 const booksToAdd = [
-    {
-        title: "The Hobbit",
-        author: "J.R.R. Tolkien",
-        pages: 295,
-        read: true
-    },
-    {
-        title: "The Discarded Image",
-        author: "C.S. Lewis",
-        pages: 300,
-        read: true
-    },
-    {
-        title: "All Hallows' Eve",
-        author: "Charles Williams",
-        pages: 200,
-        read: false
-    }
+    ["The Hobbit", "J.R.R. Tolkien", 295, true],
+    ["The Discarded Image", "C.S. Lewis", 300, true],
+    ["All Hallows' Eve", "Charles Williams", 200, false]
 ];
 
+// Library class
+class Library {
+    #books = [];
 
-function Book(title, author, pages, read) {
-    if (!new.target) {
-        throw Error("You must use the 'new' operator to call the constructor");
+    constructor(books = []) {
+        books.forEach(book => this.addBook(...book));
+    };
+
+    addBook(title, author, pages, read) {
+        const book = new Book(title, author, pages, read);
+        this.#books.push(book);
+        return book;
     }
 
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.read = read;
-    this.id = self.crypto.randomUUID();
+    getBook(id) {
+        return this.#books.find((book) => book.id === id);
+    }
+
+    getAllBooks() {
+        return [...this.#books];
+    }
+
+    deleteBook(id) {
+        const index = this.#books.findIndex(book => book.id === id);
+        if (index > -1) {
+            this.#books.splice(index, 1);
+        }
+    }
 }
 
-Book.prototype.info = function () {
-    return `${this.title} by ${this.author}, ${this.pages} pages, ${this.read ? 'read' : 'unread'}`;
+
+
+// Book class
+
+class Book {
+    constructor(title, author, pages, read) {
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.read = read;
+        this.id = self.crypto.randomUUID();
+    }
+
+    info() {
+        return `${this.title} by ${this.author}, ${this.pages} pages, ${this.read ? 'read' : 'unread'}`;
+    }
+
+    toggleRead() {
+        this.read = !this.read;
+    }
 }
 
-Book.prototype.toggleRead = function () {
-    this.read = !this.read;
-}
 
-function addBookToLibrary(title, author, pages, read) {
-    const newBook = new Book(title, author, pages, read);
-
-    myLibrary.push(newBook);
-    return newBook;
-}
-
+// Display module
 function createBookDomElement(book) {
     const bookNode = document.createElement("div");
     bookNode.classList.add("book");
@@ -114,22 +124,6 @@ function createReadToggleBtn(book) {
     return readToggleBtn;
 }
 
-function deleteBook(bookId) {
-    const index = myLibrary.findIndex(book => book.id === bookId);
-    if (index > -1) {
-        myLibrary.splice(index, 1);
-        document.querySelector(`.book[data-book-id="${bookId}"]`).remove();
-    }
-}
-
-function toggleReadStatus(bookId) {
-    const book = myLibrary.find(book => book.id === bookId);
-    const bookNode = document.querySelector(`.book[data-book-id="${bookId}"]`);
-
-    book.toggleRead();
-    renderBook(bookNode, book);
-}
-
 function renderBook(bookNode, book) {
     const readMarker = bookNode.querySelector(".book-read-marker");
     const readToggle = bookNode.querySelector(".book-read-toggle");
@@ -140,18 +134,30 @@ function renderBook(bookNode, book) {
     readToggle.textContent = book.read ? "Mark Unread" : "Mark Read";
 }
 
+function deleteBook(bookId) {
+    if (index > -1) {
+        document.querySelector(`.book[data-book-id="${bookId}"]`).remove();
+    }
+}
+
 
 // Page Initialization 
 
 const bookCards = document.querySelector(".book-cards");
+const myLibrary = new Library(booksToAdd);
 
-for (const book of booksToAdd) {
-    const newBook = addBookToLibrary(book.title, book.author, book.pages, book.read);
-    bookCards.append(createBookDomElement(newBook))
+for (const book of myLibrary.getAllBooks()) {
+    bookCards.append(createBookDomElement(book))
 }
 
 
-// Event Listener Wiring
+// Event Listener Wiring// Wiring
+
+function toggleReadStatus(bookId) {
+    const bookNode = document.querySelector(`.book[data-book-id="${bookId}"]`);
+    renderBook(bookNode, book);
+}
+
 
 const addBookDialog = document.querySelector(".add-book-dialog");
 const addBookForm = document.querySelector('.add-book-dialog form');
@@ -177,7 +183,7 @@ addBookForm.addEventListener('submit', (e) => {
 
     const bookData = new FormData(addBookForm);
 
-    const book = addBookToLibrary(
+    const book = myLibrary.addBook(
         bookData.get("title"),
         bookData.get("author"),
         bookData.get("pages"),
