@@ -35,7 +35,10 @@ class Library {
     }
 
     toggleRead(id) {
-        this.getBook(id).toggleRead();
+        const book = this.getBook(id);
+        if (book) {
+            book.toggleRead();
+        }
     }
 }
 
@@ -61,7 +64,7 @@ class Book {
 
 
 // Display module
-const DisplayController = ((library) => {
+const Display = ((library) => {
     const container = document.querySelector(".book-cards");
     const bookNodes = {};
 
@@ -73,7 +76,9 @@ const DisplayController = ((library) => {
     function bindBookCardListeners() {
         container.addEventListener('click', (e) => {
             const classes = e.target.classList;
-            const id = e.target.closest(".book").dataset.bookId;
+            const card = e.target.closest(".book");
+            if (!card) return;
+            const id = card.dataset.bookId;
 
             if (classes.contains("book-delete-btn") &&
                 window.confirm("Do you really want to delete this book?")) {
